@@ -59,7 +59,9 @@ class Dataset(lib_util.Factory):
                              self.basepath, "%s.npz" % self.name)
     print("Loading data from", data_path)
     with tf.gfile.Open(data_path, "r") as p:
-      self.data = np.load(p)[fold]
+      self.data = np.load(p, allow_pickle=True)[fold]
+      print(123)
+      print(123)
 
   @property
   def name(self):
@@ -137,6 +139,15 @@ class Dataset(lib_util.Factory):
 def get_dataset(basepath, hparams, fold):
   """Factory for Datasets."""
   return Dataset.make(hparams.dataset, basepath, hparams, fold)
+
+
+class RandomTestData(Dataset):
+  key = "RandomTestData"
+  min_pitch = 10
+  max_pitch = 100
+  shortest_duration = 0.125
+  num_instruments = 7
+  qpm = 60
 
 
 class Jsb16thSeparated(Dataset):

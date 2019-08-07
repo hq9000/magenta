@@ -59,6 +59,10 @@ flags.DEFINE_bool('separate_instruments', True,
 flags.DEFINE_integer('crop_piece_len', 64, 'The number of time steps '
                      'included in a crop')
 
+flags.DEFINE_integer('min_pitch', 36, 'Minimum pitch in the dataset')
+
+flags.DEFINE_integer('max_pitch', 81, 'Maximum pitch in the dataset')
+
 # Model architecture.
 flags.DEFINE_string('architecture', 'straight',
                     'Convnet style. Choices: straight')
@@ -150,7 +154,7 @@ def estimate_popstats(unused_sv, sess, m, dataset, unused_hparams):
     tfpopstat.load(nppopstat)
 
 
-def run_epoch(supervisor, sess, m, dataset, hparams, eval_op, experiment_type,
+def run_epoch(supervisor, sess, graph, dataset, hparams, eval_op, experiment_type,
               epoch_count):
   """Runs an epoch of training or evaluate the model on given data."""
   # reduce variance in validation loss by fixing the seed
@@ -158,7 +162,7 @@ def run_epoch(supervisor, sess, m, dataset, hparams, eval_op, experiment_type,
   with lib_util.numpy_seed(data_seed):
     batches = (
         dataset.get_featuremaps().batches(
-            size=m.batch_size, shuffle=True, shuffle_rng=data_seed))
+            size=graph.batch_size, shuffle=True, shuffle_rng=data_seed))
 
   losses = lib_util.AggregateMean('losses')
   losses_total = lib_util.AggregateMean('losses_total')
@@ -169,10 +173,10 @@ def run_epoch(supervisor, sess, m, dataset, hparams, eval_op, experiment_type,
   for unused_step, batch in enumerate(batches):
     # Evaluate the graph and run back propagation.
     fetches = [
-        m.loss, m.loss_total, m.loss_mask, m.loss_unmask, m.reduced_mask_size,
-        m.reduced_unmask_size, m.learning_rate, eval_op
+        graph.loss, graph.loss_total, graph.loss_mask, graph.loss_unmask, graph.reduced_mask_size,
+        graph.reduced_unmask_size, graph.learning_rate, eval_op
     ]
-    feed_dict = batch.get_feed_dict(m.placeholders)
+    feed_dict = batch.get_feed_dict(graph.placeholders)
     (loss, loss_total, loss_mask, loss_unmask, reduced_mask_size,
      reduced_unmask_size, learning_rate, _) = sess.run(
          fetches, feed_dict=feed_dict)
@@ -367,7 +371,7 @@ def _hparams_from_flags():
       repeat_last_dilation_level num_layers num_filters use_residual
       batch_size maskout_method mask_indicates_context optimize_mask_only
       rescale_loss patience corrupt_ratio eval_freq run_id
-      num_pointwise_splits interleave_split_every_n_layers
+      num_pointwise_splits interleave_split_every_n_layers min_pitch max_pitch
       """.split())
   hparams = lib_hparams.Hyperparameters(**dict(
       (key, getattr(FLAGS, key)) for key in keys))
