@@ -150,6 +150,15 @@ class RandomTestData(Dataset):
   qpm = 60
 
 
+class Neuromidi(Dataset):
+  key = "Neuromidi"
+  min_pitch = 33
+  max_pitch = 95
+  shortest_duration = 0.125
+  num_instruments = 6
+  qpm = 120
+
+
 class Jsb16thSeparated(Dataset):
   key = "Jsb16thSeparated"
   min_pitch = 36

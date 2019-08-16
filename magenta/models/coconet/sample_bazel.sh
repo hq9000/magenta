@@ -23,7 +23,7 @@ set -e
 # and pass the path up to the inner most directory as first argument when running this
 # script.
 # Warning: the format of the downloaded checkpoint can appear incompatible with the TF you are using, which may require
-# some modification in the checkpoint structure. In one of the cases of this kind it was required to rename all files nameed
+# some modification in the checkpoint structure. In one of the cases of this kind it was required to rename all files named
 # best_model.* into model.*
 #
 checkpoint=$1
