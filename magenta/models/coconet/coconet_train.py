@@ -273,25 +273,25 @@ def main(unused_argv):
                                'best_model.ckpt'))
 
     # Graph will be finalized after instantiating supervisor.
-    sv = tf.train.Supervisor(
+    supervisor = tf.train.Supervisor(
         logdir=logdir,
         saver=tf.train.Supervisor.USE_DEFAULT if FLAGS.log_progress else None,
         summary_op=None,
         save_model_secs=FLAGS.save_model_secs)
-    with sv.PrepareSession() as sess:
+    with supervisor.PrepareSession() as sess:
       epoch_count = 0
       while epoch_count < FLAGS.num_epochs or not FLAGS.num_epochs:
-        if sv.should_stop():
+        if supervisor.should_stop():
           break
 
         # Run training.
-        run_epoch(sv, sess, training_graph, train_data, hparams, training_graph.train_op, 'train',
+        run_epoch(supervisor, sess, training_graph, train_data, hparams, training_graph.train_op, 'train',
                   epoch_count)
 
         # Run validation.
         if epoch_count % hparams.eval_freq == 0:
-          estimate_popstats(sv, sess, training_graph, train_data, hparams)
-          loss = run_epoch(sv, sess, validation_graph, valid_data, hparams, no_op,
+          estimate_popstats(supervisor, sess, training_graph, train_data, hparams)
+          loss = run_epoch(supervisor, sess, validation_graph, valid_data, hparams, no_op,
                            'valid', epoch_count)
           tracker(loss, sess)
           if tracker.should_stop():
